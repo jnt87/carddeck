@@ -121,11 +121,28 @@ impl Deck {
     }
 
     fn draw(&mut self) -> Option<Card> {
+        if self.cards.len() == 0 {
+            for i in 1..5 {
+                for j in 1..14 {
+                    self.cards.push(Card::new_fromi32(i, j));
+                }
+            }
+            self.shuffle();
+            println!("New Deck!");
+        }
         self.cards.pop()
     }
 
     fn shuffle(&mut self) {
-        let mut index = self.cards.len()-1;
+        let mut index = self.cards.len();
+        if index == 0 {
+            for i in 1..5 {
+                for j in 1..14 {
+                    self.cards.push(Card::new_fromi32(i, j));
+                }
+            }            
+        }
+        index = self.cards.len()-1;
         while index > 0 {
             let to_swap = rand::thread_rng().gen_range(0..index);
             self.cards.swap(to_swap, index);
@@ -138,7 +155,7 @@ impl Deck {
 fn main() {
     let mut deck = Deck::new();
     deck.shuffle();
-    let mut card = match deck.draw() {
+    let card = match deck.draw() {
         Some(top) => top,
         None => {
             panic!("No card!")
