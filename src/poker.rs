@@ -1,6 +1,8 @@
 use std::fmt;
 use rand::Rng;
+use std::cmp::Ordering;
 
+#[derive(Eq, Debug, PartialOrd, PartialEq, Copy, Clone)]
 pub enum Suit {
     HEARTS = 1, 
     SPADES = 2, 
@@ -31,6 +33,7 @@ impl Suit {
     }
 }
 
+#[derive(Eq, Debug, PartialOrd, PartialEq, Copy, Clone)]
 pub enum Face {
     ACE = 1, 
     TWO = 2, 
@@ -45,6 +48,7 @@ pub enum Face {
     JACK = 11, 
     QUEEN = 12, 
     KING = 13,
+    ACE_HIGH = 14,
 }
 
 impl fmt::Display for Face {
@@ -63,6 +67,7 @@ impl fmt::Display for Face {
             Face::JACK => write!(f, "Jack"),
             Face::QUEEN => write!(f, "Queen"),
             Face::KING => write!(f, "King"),
+            Face::ACE_HIGH => write!(f, "Ace"),
         }
     }
 }
@@ -83,15 +88,34 @@ impl Face {
             11 => Face::JACK,
             12 => Face::QUEEN,
             13 => Face::KING,
+            14 => Face::ACE_HIGH,
             _ => panic!("Unknown Face value: {}", value),
         }
     }
 }
 
+#[derive(Eq, Debug, PartialOrd, PartialEq, Copy, Clone)]
 pub struct Card {
     pub st: Suit,
     pub val: Face,
 }
+
+impl Ord for Card {
+    fn cmp(&self, other: &Self) -> Ordering {
+        if (self.val as i32) < (other.val as i32) {
+            Ordering::Less
+        } else if (self.val as i32) > (other.val as i32) {
+            Ordering::Greater
+        } else {
+            if (self.st as i32) > (other.st as i32) {
+                Ordering::Less
+            } else {
+                Ordering::Greater
+            }
+        }
+    }
+}
+
 
 impl Card {
     fn new(st: Suit, val: Face) -> Self {
@@ -110,10 +134,13 @@ pub struct Deck {
 }
 
 impl Deck {
-    pub fn new() -> Self {
+    pub fn new(ace_high: bool) -> Self {
         let mut cards: Vec<Card> = Vec::with_capacity(52);
         for i in 1..5 {
             for j in 1..14 {
+                if (j == 1) & ace_high {
+                    cards.push(Card::new_fromi32(i, 14));
+                }
                 cards.push(Card::new_fromi32(i, j));
             }
         }
